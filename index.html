@@ -1779,7 +1779,8 @@ Chef executive
 <h2>☁️ Archivio online protetto — Versione 16.1 (recupero password)</h2>
 <p class="note">Sincronizzazione fra dispositivi tramite accesso personale. La prima copia online si crea soltanto su tua conferma. Le foto già incorporate nel programma restano visibili; il cloud conserva le modifiche alle ricette, HACCP, prezzi e acquisti.</p>
 <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end"><label>Email personale<br><input id="sync-email" type="email" autocomplete="email" placeholder="tua@email.it" style="min-width:210px"></label><label>Password<br><input id="sync-password" type="password" autocomplete="current-password" placeholder="Minimo 8 caratteri" style="min-width:190px"></label></div>
-<div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"><button type="button" id="sync-signup">Crea account</button><button type="button" id="sync-login">Accedi</button><button type="button" id="sync-logout">Esci</button><button type="button" id="sync-recover">Recupera password</button><button type="button" id="sync-change" style="display:none">Salva nuova password</button></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"><button type="button" id="sync-signup">Crea account</button><button type="button" id="sync-login">Accedi</button><button type="button" id="sync-logout">Esci</button><button type="button" id="sync-recover">Recupera password</button><button type="button" id="sync-change">Imposta nuova password</button></div>
+<p class="note" style="margin:8px 0;color:#e7c991">Se il link di recupero ti ha già fatto accedere, puoi impostare una password nuova direttamente qui: scrivila nel campo Password (almeno 8 caratteri) e premi «Imposta nuova password». Questa funzione richiede una sessione autenticata; non crea nuovi account e non sincronizza i dati.</p>
 <p id="sync-status" role="status" aria-live="polite" style="font-weight:600;color:#e7c991">Non collegato. Il gestionale continua a funzionare in locale.</p>
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"><button type="button" id="sync-upload">1. Invia dati di questo dispositivo al cloud</button><button type="button" id="sync-download">2. Scarica dati cloud su questo dispositivo</button><button type="button" id="sync-stop">Sospendi sincronizzazione</button></div>
 <p class="note" id="sync-mode">Sincronizzazione automatica disattivata finché non scegli quale copia mantenere. Prima di sostituire dati locali viene scaricato un backup preventivo.</p>
@@ -2344,7 +2345,6 @@ qs('sync-change').addEventListener('click',async()=>{
   const {error}=await client.auth.updateUser({password:pass});
   if(error)throw error;
   qs('sync-password').value='';
-  qs('sync-change').style.display='none';
   status('Nuova password salvata. L’account è pronto; verifica Accedi senza sincronizzare ancora.');
  }catch(e){status('Nuova password: '+e.message);}
 });
