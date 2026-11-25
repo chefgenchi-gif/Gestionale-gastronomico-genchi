@@ -1800,8 +1800,20 @@ const section=document.createElement('section');section.id='emulsionanti';sectio
 const heading=document.createElement('h2');heading.textContent='Emulsionanti — Vinaigrette, citronette e condimenti';section.appendChild(heading);
 const note=document.createElement('p');note.className='note';note.textContent='4 schede operative. Rapporto 9:3:1 trasformato in grammi di ingredienti pesati (900:300:100 g), per un calcolo riproducibile. La base è fissata a 100 dosi teoriche da circa 13 g, esclusi correttivi q.b. I valori non specificati dalla fonte restano da definire. Le fotografie dei reel sono riferimenti, non foto originali dei piatti.';section.appendChild(note);
 const qualifier=document.createElement('p');qualifier.className='note';qualifier.textContent='Queste preparazioni sono emulsioni culinarie: la stabilità dipende da formulazione, temperatura e tecnica, e non costituisce garanzia di conservabilità microbiologica.';section.appendChild(qualifier);
+const recipeIndex=document.createElement('div');
+recipeIndex.className='genchi-emulsioni-index';
+recipeIndex.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:12px 0 18px';
 for(const item of recipeData){
- const card=source.cloneNode(true);card.id=item.id;
+ const link=document.createElement('a');
+ link.href='#'+item.id;
+ link.textContent='📋 '+item.title+' — Apri ricetta';
+ link.style.cssText='display:block;padding:10px 12px;border:1px solid #b38a4b;border-radius:9px;color:#e1be7e;background:#24252a;text-decoration:none;font-weight:600';
+ link.addEventListener('click',function(){const target=document.getElementById(item.id);if(target)target.open=true;});
+ recipeIndex.appendChild(link);
+}
+section.appendChild(recipeIndex);
+for(const item of recipeData){
+ const card=source.cloneNode(true);card.id=item.id;card.open=false;card.style.margin='10px 0';
  card.querySelector('summary').textContent=item.title;
  const oldBadge=card.querySelector('.badge');if(oldBadge)oldBadge.remove();
  card.querySelector('.base').value='100';card.querySelector('.target').value='100';
