@@ -1776,10 +1776,10 @@ Chef executive
 <p class="extwarn">Questa scheda è uno strumento di registrazione e non sostituisce il manuale HACCP aziendale, le procedure validate né la formazione obbligatoria.</p>
 <div class="toolbar print-controls"><button class="print-recipe primary" type="button">🖨 Stampa ricetta A4</button><button class="print-prod" type="button">🖨 Stampa scheda tecnica e HACCP</button><button class="print-cost" type="button">€ Stampa food cost e scarti</button></div>
 </div></div></details></section><button id="export" type="button">Esporta solo ingredienti (backup precedente)</button><section class="panel" id="genchi-cloud-sync" style="margin:18px 0;border:2px solid #b38a4b;border-radius:16px;padding:20px;background:#20242c">
-<h2>☁️ Archivio online protetto — Versione 16</h2>
+<h2>☁️ Archivio online protetto — Versione 16.1 (recupero password)</h2>
 <p class="note">Sincronizzazione fra dispositivi tramite accesso personale. La prima copia online si crea soltanto su tua conferma. Le foto già incorporate nel programma restano visibili; il cloud conserva le modifiche alle ricette, HACCP, prezzi e acquisti.</p>
 <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end"><label>Email personale<br><input id="sync-email" type="email" autocomplete="email" placeholder="tua@email.it" style="min-width:210px"></label><label>Password<br><input id="sync-password" type="password" autocomplete="current-password" placeholder="Minimo 8 caratteri" style="min-width:190px"></label></div>
-<div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"><button type="button" id="sync-signup">Crea account</button><button type="button" id="sync-login">Accedi</button><button type="button" id="sync-logout">Esci</button></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"><button type="button" id="sync-signup">Crea account</button><button type="button" id="sync-login">Accedi</button><button type="button" id="sync-logout">Esci</button><button type="button" id="sync-recover">Recupera password</button><button type="button" id="sync-change" style="display:none">Salva nuova password</button></div>
 <p id="sync-status" role="status" aria-live="polite" style="font-weight:600;color:#e7c991">Non collegato. Il gestionale continua a funzionare in locale.</p>
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"><button type="button" id="sync-upload">1. Invia dati di questo dispositivo al cloud</button><button type="button" id="sync-download">2. Scarica dati cloud su questo dispositivo</button><button type="button" id="sync-stop">Sospendi sincronizzazione</button></div>
 <p class="note" id="sync-mode">Sincronizzazione automatica disattivata finché non scegli quale copia mantenere. Prima di sostituire dati locali viene scaricato un backup preventivo.</p>
@@ -2323,6 +2323,38 @@ status('Dati scaricati. La pagina verrà ricaricata per aggiornare tutte le sche
 }catch(e){status('Ripristino online non riuscito: '+e.message)}finally{state.busy=false}}
 qs('sync-signup').addEventListener('click',async()=>{try{const email=qs('sync-email').value.trim(),password=qs('sync-password').value;if(!email||password.length<8){status('Inserisci email e password di almeno 8 caratteri.');return;}const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;status(data.session?'Account creato e collegato.':'Controlla la tua email per confermare la registrazione, poi premi Accedi.');await account();}catch(e){status('Registrazione: '+e.message)}});
 qs('sync-login').addEventListener('click',async()=>{try{const {error}=await client.auth.signInWithPassword({email:qs('sync-email').value.trim(),password:qs('sync-password').value});if(error)throw error;qs('sync-password').value='';await account();}catch(e){status('Accesso: '+e.message)}});
+
+// Il recupero arriva all'indirizzo autorizzato del gestionale; non chiede mai la password in chat.
+qs('sync-recover').addEventListener('click',async()=>{
+ const email=qs('sync-email').value.trim();
+ if(!email){status('Inserisci prima l’email dell’account da recuperare.');return;}
+ try{
+  const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  if(error)throw error;
+  status('Richiesta inviata. Apri l’email di recupero; poi torna qui e inserisci la nuova password.');
+ }catch(e){status('Recupero: '+e.message+'. Se compare un limite di invio, non ripetere subito.');}
+});
+qs('sync-change').addEventListener('click',async()=>{
+ const pass=qs('sync-password').value;
+ if(pass.length<8){status('Scegli una nuova password di almeno 8 caratteri.');return;}
+ try{
+  const {data:{session},error:sessionError}=await client.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!session){status('Apri prima il link ricevuto per il recupero della password.');return;}
+  const {error}=await client.auth.updateUser({password:pass});
+  if(error)throw error;
+  qs('sync-password').value='';
+  qs('sync-change').style.display='none';
+  status('Nuova password salvata. L’account è pronto; verifica Accedi senza sincronizzare ancora.');
+ }catch(e){status('Nuova password: '+e.message);}
+});
+client.auth.onAuthStateChange((event)=>{
+ if(event==='PASSWORD_RECOVERY'){
+  state.mode=false;
+  qs('sync-change').style.display='inline-block';
+  status('Recupero autorizzato. Scrivi la nuova password nel campo Password e premi Salva nuova password.');
+ }
+});
 qs('sync-logout').addEventListener('click',async()=>{state.mode=false;await client.auth.signOut();await account()});
 qs('sync-upload').addEventListener('click',pushClick);
 qs('sync-download').addEventListener('click',pullClick);
