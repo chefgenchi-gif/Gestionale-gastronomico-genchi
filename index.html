@@ -2370,7 +2370,7 @@ account().catch(e=>status('Connessione non disponibile: '+e.message));
 'use strict';
 // No recipe content or browser storage is changed. The values below are read from the existing calculator.
 const style=document.createElement('style');
-style.textContent='.genchi-live-doses{border:1px solid #b99a63;border-radius:10px;padding:12px;margin:12px 0;background:rgba(185,154,99,.09);color:inherit}.genchi-live-doses h4{margin:0 0 7px;color:#e1be7e;font-size:1rem}.genchi-live-doses .doses-note{margin:5px 0 10px;line-height:1.45;font-weight:600}.genchi-live-doses table{width:100%;border-collapse:collapse;font-size:.92rem}.genchi-live-doses td{border-bottom:1px solid #5a5248;padding:5px 7px}.genchi-live-doses td:last-child{text-align:right;font-weight:700;white-space:nowrap}.genchi-live-doses .doses-subtitle{font-size:.86rem;opacity:.92}';
+style.textContent='.genchi-live-doses{border:1px solid #b99a63;border-radius:8px;padding:7px 10px;margin:6px 0;background:rgba(185,154,99,.07);color:inherit}.genchi-live-doses summary{cursor:pointer;color:#e1be7e;font-size:.92rem;font-weight:700;line-height:1.3}.genchi-live-doses .doses-note{margin:5px 0;line-height:1.3;font-size:.82rem}.genchi-live-doses table{width:100%;border-collapse:collapse;font-size:.82rem}.genchi-live-doses td{border-bottom:1px solid #5a5248;padding:3px 5px}.genchi-live-doses td:last-child{text-align:right;font-weight:700;white-space:nowrap}.genchi-live-doses .doses-subtitle{font-size:.8rem;opacity:.92}';
 document.head.appendChild(style);
 const recipes=[...document.querySelectorAll('.recipe')];
 function updateRecipe(recipe){
@@ -2378,20 +2378,22 @@ function updateRecipe(recipe){
  if(!p)return;
  let container=recipe.querySelector('.genchi-live-doses');
  if(!container){
-   container=document.createElement('section');container.className='genchi-live-doses';
+   container=document.createElement('details');container.className='genchi-live-doses';
    const label=p.closest('label')||p;
    label.parentNode.insertBefore(container,label);
  }
+ const wasOpen=container.open;
  const base=recipe.querySelector('.base')?.value||'?';
  const target=recipe.querySelector('.target')?.value||'?';
  const num=Number(target),den=Number(base);
  const factor=den>0?num/den:NaN;
  container.replaceChildren();
- const title=document.createElement('h4');
- title.textContent='Dosi operative aggiornate — '+target+' porzioni';
+ const title=document.createElement('summary');
+ title.textContent='Dosi operative: '+target+' porzioni (× '+(Number.isFinite(factor)?Number(factor.toFixed(3)).toLocaleString('it-IT'):'—')+') — clicca per aprire';
  container.appendChild(title);
+ container.open=wasOpen;
  const note=document.createElement('p');note.className='doses-note';
- note.textContent='ATTENZIONE: il procedimento scritto sotto è il testo originale per '+base+' porzioni. Per ogni ingrediente usa esclusivamente le quantità aggiornate qui sotto. Tempi, temperature e indicazioni tecniche NON si moltiplicano.';
+ note.textContent='Le quantità operative sono nella tabella ingredienti qui sopra, già calcolate per '+target+' porzioni. Il testo del procedimento contiene eventuali quantità originali per '+base+' porzioni: non usarle per il dosaggio. Tempi e temperature restano invariati.';
  container.appendChild(note);
  if(!Number.isFinite(factor)||num<1||num>1000||!Number.isInteger(num)){
   const error=document.createElement('p');error.textContent='Inserisci porzioni valide da 1 a 1.000.';container.appendChild(error);return;
