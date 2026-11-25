@@ -1784,7 +1784,51 @@ Chef executive
 <p id="sync-status" role="status" aria-live="polite" style="font-weight:600;color:#e7c991">Non collegato. Il gestionale continua a funzionare in locale.</p>
 <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"><button type="button" id="sync-upload">1. Invia dati di questo dispositivo al cloud</button><button type="button" id="sync-download">2. Scarica dati cloud su questo dispositivo</button><button type="button" id="sync-stop">Sospendi sincronizzazione</button></div>
 <p class="note" id="sync-mode">Sincronizzazione automatica disattivata finché non scegli quale copia mantenere. Prima di sostituire dati locali viene scaricato un backup preventivo.</p>
-</section><section class="panel" id="backup-completo"><h2>Backup completo del gestionale</h2><p class="note">Esporta sia gli ingredienti e il moltiplicatore sia lavorazione, food cost e HACCP. L'importazione sostituisce i dati locali dopo conferma.</p><div class="toolbar"><button class="primary" id="export-all" type="button">Esporta backup completo (JSON)</button><label style="display:inline-block;border:1px solid #686f7c;padding:10px;border-radius:8px">Importa backup completo <input accept="application/json,.json" id="import-all" style="max-width:230px" type="file"/></label></div></section></div><script>
+</section><section class="panel" id="backup-completo"><h2>Backup completo del gestionale</h2><p class="note">Esporta sia gli ingredienti e il moltiplicatore sia lavorazione, food cost e HACCP. L'importazione sostituisce i dati locali dopo conferma.</p><div class="toolbar"><button class="primary" id="export-all" type="button">Esporta backup completo (JSON)</button><label style="display:inline-block;border:1px solid #686f7c;padding:10px;border-radius:8px">Importa backup completo <input accept="application/json,.json" id="import-all" style="max-width:230px" type="file"/></label></div></section></div><script id="genchi-emulsionanti-catalogue">
+(function(){
+'use strict';
+const source=document.querySelector('#r1');
+const finger=document.querySelector('#finger');
+if(!source||!finger||document.querySelector('#emulsionanti'))return;
+const recipeData=[
+ {id:'r19',title:'Vinaigrette classica alla senape',rows:[['Olio extravergine di oliva',900,'g'],['Aceto di vino rosso',300,'g'],['Senape',100,'g']],procedure:'1. Pesare olio EVO, aceto di vino rosso e senape secondo le dosi operative aggiornate.\n\n2. Emulsionare inizialmente aceto e senape con frullatore a immersione in recipiente alto e pulito.\n\n3. Incorporare l’olio a filo, frullando fino a consistenza omogenea. Regolare con sale e pepe q.b., senza alterare il rapporto della ricetta di base.\n\n4. Utilizzare subito oppure mantenere refrigerato e rimescolare prima del servizio. Durata e temperatura di conservazione da validare secondo piano HACCP.',allergens:'Senape (verificare inoltre l’etichetta commerciale)',plating:'Condimento per insalate, ortaggi e preparazioni fredde; dosare secondo il piatto.'},
+ {id:'r20',title:'Citronette al limone e miele',rows:[['Olio extravergine di oliva',900,'g'],['Succo di limone',300,'g'],['Miele',100,'g']],procedure:'1. Pesare gli ingredienti secondo le dosi operative aggiornate.\n\n2. Sciogliere e disperdere accuratamente il miele nel succo di limone.\n\n3. Emulsionare con frullatore a immersione incorporando lentamente l’olio EVO fino a ottenere una consistenza uniforme.\n\n4. Regolare di sale q.b. e verificare l’equilibrio acido-dolce. Utilizzare o refrigerare secondo procedura HACCP validata; rimescolare prima del servizio.',allergens:'Nessuno degli allergeni dell’Allegato II rilevabile dai soli ingredienti indicati; verificare le etichette',plating:'Per ortaggi, pesce cotto e insalate; dosaggio da definire in funzione della preparazione.'},
+ {id:'r21',title:'Chimichurri emulsionato',rows:[['Olio extravergine di oliva',900,'g'],['Aceto di vino rosso',300,'g'],['Aglio pestato',100,'g']],procedure:'1. Pesare olio EVO, aceto di vino rosso e aglio pestato secondo le dosi operative aggiornate.\n\n2. Tritare finemente origano e prezzemolo nelle quantità previste per il servizio; aggiungere peperoncino e sale q.b.\n\n3. Unire l’aceto e l’aglio, incorporare l’olio e frullare brevemente per emulsionare senza ridurre completamente in purea le erbe.\n\n4. Assaggiare e regolare l’equilibrio aromatico. Conservazione refrigerata e vita utile da validare nel piano HACCP, con particolare attenzione all’aglio e alle erbe in olio.',allergens:'Verificare etichette e possibili contaminazioni crociate',plating:'Salsa per carni e verdure alla brace; aggiungere poco prima del servizio.'},
+ {id:'r22',title:'Emulsione asiatica al miso',rows:[['Miscela di olio di arachidi e olio di sesamo (proporzioni interne da definire)',900,'g'],['Aceto di riso',300,'g'],['Miso',100,'g']],procedure:'1. Preparare la miscela di olio di arachidi e olio di sesamo, definendo e registrando la proporzione fra i due oli.\n\n2. Pesare miscela di oli, aceto di riso e miso secondo le dosi operative aggiornate.\n\n3. Stemperare il miso nell’aceto di riso fino a sciogliere gli eventuali grumi.\n\n4. Incorporare lentamente la miscela di oli con frullatore a immersione fino a emulsione omogenea.\n\n5. Regolare con zucchero di canna q.b. dopo assaggio. Conservare secondo piano HACCP validato e rimescolare prima del servizio.',allergens:'Arachidi, sesamo; soia se il miso è a base di soia. Verificare inoltre eventuale glutine e altri allergeni in etichetta',plating:'Condimento per verdure, riso e piatti di ispirazione asiatica; dosare a servizio.'}
+];
+const section=document.createElement('section');section.id='emulsionanti';section.className='panel';section.style.margin='18px 0';
+const heading=document.createElement('h2');heading.textContent='Emulsionanti — Vinaigrette, citronette e condimenti';section.appendChild(heading);
+const note=document.createElement('p');note.className='note';note.textContent='4 schede operative. Rapporto 9:3:1 trasformato in grammi di ingredienti pesati (900:300:100 g), per un calcolo riproducibile. La base è fissata a 100 dosi teoriche da circa 13 g, esclusi correttivi q.b. I valori non specificati dalla fonte restano da definire. Le fotografie dei reel sono riferimenti, non foto originali dei piatti.';section.appendChild(note);
+const qualifier=document.createElement('p');qualifier.className='note';qualifier.textContent='Queste preparazioni sono emulsioni culinarie: la stabilità dipende da formulazione, temperatura e tecnica, e non costituisce garanzia di conservabilità microbiologica.';section.appendChild(qualifier);
+for(const item of recipeData){
+ const card=source.cloneNode(true);card.id=item.id;
+ card.querySelector('summary').textContent=item.title;
+ const oldBadge=card.querySelector('.badge');if(oldBadge)oldBadge.remove();
+ card.querySelector('.base').value='100';card.querySelector('.target').value='100';
+ card.querySelector('.procedure').value=item.procedure;
+ const tbody=card.querySelector('tbody');tbody.replaceChildren();
+ for(const [name,qty,unit] of item.rows){
+   const tr=document.createElement('tr');
+   const nameTd=document.createElement('td');nameTd.textContent=name;
+   const qtyTd=document.createElement('td');const inp=document.createElement('input');inp.className='qty';inp.type='number';inp.min='0';inp.step='any';inp.value=String(qty);qtyTd.appendChild(inp);
+   const unitTd=document.createElement('td');unitTd.textContent=unit;
+   const calcTd=document.createElement('td');calcTd.className='calc';calcTd.textContent='—';
+   tr.append(nameTd,qtyTd,unitTd,calcTd);tbody.appendChild(tr);
+ }
+ const assign=(selector,value)=>{const el=card.querySelector(selector);if(el)el.value=value};
+ assign('.ext-dept','Garde manger / Condimenti');
+ assign('.ext-equipment','Bilancia; contenitore idoneo; frullatore a immersione; spatola; frigorifero');
+ assign('.ext-process',item.procedure);
+ assign('.ext-plating',item.plating);
+ assign('.ext-allergens',item.allergens);
+ assign('.ext-haccp','Verificare ingredienti e allergeni su etichette, tracciabilità, igiene di utensili e contenitori, manipolazione a freddo e possibili contaminazioni. Tempi e temperature di conservazione non definiti dalla fonte: convalidare con il piano HACCP aziendale.');
+ assign('.ext-safety','Nessun abbattimento previsto sulla base della fonte. Durata, confezionamento e temperatura di conservazione devono essere convalidati prima della produzione.');
+ assign('.ext-chefnotes','Rapporto 9:3:1 espresso in peso. Correttivi aromatici q.b. non inclusi nella distinta né nel food cost finché non vengono pesati e registrati.');
+ section.appendChild(card);
+}
+const exportBtn=document.getElementById('export');if(exportBtn)exportBtn.before(section);else finger.after(section);
+})();
+</script><script>
 (function () {
   "use strict";
   const KEY = 'genchi_finger_ricette_v3';
