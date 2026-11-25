@@ -2415,4 +2415,32 @@ document.addEventListener('input',ev=>{if(ev.target.closest('.recipe'))setTimeou
 document.addEventListener('click',ev=>{const recipe=ev.target.closest('.recipe');if(recipe)setTimeout(()=>updateRecipe(recipe),35)},true);
 updateAll();
 })();
+</script>
+<script id="genchi-procedure-text-cleanup">
+(function(){
+'use strict';
+// Normalization only; source quantities in ingredient rows, temperature and timing are never changed.
+function normalize(text,isMeringa){
+ let s=String(text||'');
+ s=s.replace(/(^|\n[ \t]*)(0?\d{1,2})\.[ \t]+(0?\d{1,2})\.[ \t]+/g,function(match,start,first,second){
+   return Number(first)===Number(second)?start+Number(first)+'. ':match;
+ });
+ // The coulis 100 g is a BASE-recipe dose, not a universal production quantity.
+ if(isMeringa){
+   s=s.replace(/pesarne[ \t]+100[ \t]*g\b/gi,'pesarne la quantità prevista nelle dosi operative aggiornate');
+ }
+ return s;
+}
+document.querySelectorAll('.recipe').forEach(function(recipe){
+ const isMeringa=recipe.id==='r0';
+ ['.procedure','.ext-process'].forEach(function(selector){
+   const input=recipe.querySelector(selector);if(!input)return;
+   const cleaned=normalize(input.value,isMeringa);
+   if(cleaned!==input.value){
+     input.value=cleaned;
+     input.dispatchEvent(new Event('input',{bubbles:true}));
+   }
+ });
+});
+})();
 </script></body></html>
