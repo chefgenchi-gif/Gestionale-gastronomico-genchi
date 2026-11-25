@@ -1954,7 +1954,8 @@ function printGastro(r){
  const procedure=r.querySelector('.procedure')?.value.trim()||'';
  const process=r.querySelector('.ext-process')?.value.trim()||'';
  const plating=r.querySelector('.ext-plating')?.value.trim()||'';
- make('h2',null,'Procedimento completo');
+ make('h2',null,'Procedimento originale — quantità riferite alle porzioni base');
+ make('p','notice','ATTENZIONE: per la produzione usare le quantità calcolate nella tabella precedente. Le quantità citate nel testo originale non sono ridimensionate automaticamente; tempi e temperature restano invariati.');
  make('pre',null,procedure||'Procedimento originale da recuperare.');
  if(process && process!==procedure){make('h2',null,'Lavorazioni e mise en place');make('pre',null,process)}
  make('h2',null,'Impiattamento e servizio');make('pre',null,plating||'Da completare secondo la ricetta.');
@@ -2002,7 +2003,8 @@ function printTechnical(r,production){
  });target.appendChild(table);
  section('Organizzazione e lavorazione');
  details([['Reparto / partita',r.querySelector('.ext-dept')?.value],['Responsabile',r.querySelector('.ext-owner')?.value],['Attrezzature',r.querySelector('.ext-equipment')?.value],['Preparazione (minuti)',r.querySelector('.ext-preptime')?.value],['Cottura (minuti)',r.querySelector('.ext-cooktime')?.value],['Temperature / parametri',r.querySelector('.ext-temp')?.value]]);
- longtext('Procedimento completo',r.querySelector('.procedure')?.value);
+ add('p','ATTENZIONE DOSI: per la produzione valgono le quantità calcolate nella tabella qui sopra. I numeri nel procedimento originale possono riferirsi alle porzioni base e non vengono moltiplicati automaticamente.','print-subtitle');
+ longtext('Procedimento originale (dosi di base)',r.querySelector('.procedure')?.value);
  longtext('Fasi di lavorazione e mise en place',r.querySelector('.ext-process')?.value);
  longtext('Impiattamento e servizio',r.querySelector('.ext-plating')?.value);
  if(!production){
@@ -2363,4 +2365,52 @@ qs('sync-stop').addEventListener('click',()=>{state.mode=false;status('Sincroniz
 setInterval(async()=>{if(!state.mode||!state.user||state.busy||document.hidden)return;try{const local=stringify(snapshot());if(local!==state.baseline){await upload(true);return}const r=await remote();if(r&&r.updated_at!==state.lastRemote){state.mode=false;status('Modifiche trovate sul cloud. Per sicurezza premi Scarica dati cloud per aggiornare questa pagina.');mode('Aggiornamento ricevuto, nessun dato locale sovrascritto automaticamente.');}}catch(e){state.mode=false;status('Connessione interrotta: '+e.message)}},12000);
 client.auth.onAuthStateChange(()=>{setTimeout(()=>account().catch(e=>status('Connessione: '+e.message)),0)});
 account().catch(e=>status('Connessione non disponibile: '+e.message));
+</script><script id="genchi-safe-procedure-doses">
+(function(){
+'use strict';
+// No recipe content or browser storage is changed. The values below are read from the existing calculator.
+const style=document.createElement('style');
+style.textContent='.genchi-live-doses{border:1px solid #b99a63;border-radius:10px;padding:12px;margin:12px 0;background:rgba(185,154,99,.09);color:inherit}.genchi-live-doses h4{margin:0 0 7px;color:#e1be7e;font-size:1rem}.genchi-live-doses .doses-note{margin:5px 0 10px;line-height:1.45;font-weight:600}.genchi-live-doses table{width:100%;border-collapse:collapse;font-size:.92rem}.genchi-live-doses td{border-bottom:1px solid #5a5248;padding:5px 7px}.genchi-live-doses td:last-child{text-align:right;font-weight:700;white-space:nowrap}.genchi-live-doses .doses-subtitle{font-size:.86rem;opacity:.92}';
+document.head.appendChild(style);
+const recipes=[...document.querySelectorAll('.recipe')];
+function updateRecipe(recipe){
+ const p=recipe.querySelector('.procedure');
+ if(!p)return;
+ let container=recipe.querySelector('.genchi-live-doses');
+ if(!container){
+   container=document.createElement('section');container.className='genchi-live-doses';
+   const label=p.closest('label')||p;
+   label.parentNode.insertBefore(container,label);
+ }
+ const base=recipe.querySelector('.base')?.value||'?';
+ const target=recipe.querySelector('.target')?.value||'?';
+ const num=Number(target),den=Number(base);
+ const factor=den>0?num/den:NaN;
+ container.replaceChildren();
+ const title=document.createElement('h4');
+ title.textContent='Dosi operative aggiornate — '+target+' porzioni';
+ container.appendChild(title);
+ const note=document.createElement('p');note.className='doses-note';
+ note.textContent='ATTENZIONE: il procedimento scritto sotto è il testo originale per '+base+' porzioni. Per ogni ingrediente usa esclusivamente le quantità aggiornate qui sotto. Tempi, temperature e indicazioni tecniche NON si moltiplicano.';
+ container.appendChild(note);
+ if(!Number.isFinite(factor)||num<1||num>1000||!Number.isInteger(num)){
+  const error=document.createElement('p');error.textContent='Inserisci porzioni valide da 1 a 1.000.';container.appendChild(error);return;
+ }
+ const table=document.createElement('table');const body=document.createElement('tbody');table.appendChild(body);
+ let count=0;
+ recipe.querySelectorAll('tbody tr').forEach(tr=>{
+  const inp=tr.querySelector('.qty'); if(!inp)return;
+  const name=tr.cells[0]?.textContent.trim()||'Ingrediente';
+  const calculated=tr.querySelector('.calc')?.textContent.trim()||'—';
+  const row=document.createElement('tr'); const nameCell=document.createElement('td'),valCell=document.createElement('td');
+  nameCell.textContent=name;valCell.textContent=calculated;row.append(nameCell,valCell);body.appendChild(row);count++;
+ });
+ if(count)container.appendChild(table);
+ else{const empty=document.createElement('p');empty.textContent='Ingredienti da completare: non usare il procedimento come distinta di produzione.';container.appendChild(empty)}
+}
+function updateAll(){recipes.forEach(updateRecipe)}
+document.addEventListener('input',ev=>{if(ev.target.closest('.recipe'))setTimeout(()=>updateRecipe(ev.target.closest('.recipe')),30)},true);
+document.addEventListener('click',ev=>{const recipe=ev.target.closest('.recipe');if(recipe)setTimeout(()=>updateRecipe(recipe),35)},true);
+updateAll();
+})();
 </script></body></html>
